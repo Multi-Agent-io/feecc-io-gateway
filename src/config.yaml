@@ -1,0 +1,42 @@
+# SERVICE IO SECTION
+api_server: # socket for the Api server to run on
+  production_environment: false
+
+mongo_db: # MongoDB credentials
+  mongo_connection_url: sample_text
+
+
+# EXTERNAL IO SECTION
+robonomics_network:
+  path_to_robonomics_binary: "robonomics" # where lies the binary file, ends with a binary filename
+  remote: '--remote wss://earth.rpc.robonomics.network' # e.g. ws://127.0.0.1:9944
+  key: '' # secret key in robonomics network
+  enable_datalog: false # Whether to write certain data to Robonomics datalog or not
+
+pinata:
+  enable: true # Enable pinning of files published to IPFS to Pinata
+  pinata_api: sample_text
+  pinata_secret_api: sample_text
+
+ipfs:
+  enable: true
+  gateway_address: "https://gateway.ipfs.io/ipfs/" # IPFS gateway to use when creating links
+
+yourls: # Information about the yourls node used for short link creation
+  server: sample_text
+  username: sample_text
+  password: sample_text
+
+
+# PERIPHERALS SECTION
+printer: # Info about the Brother Label printer used in your operation
+  printer_model: "QL-800"
+  paper_width: 62 # paper width in mm
+  address: "usb://0x04f9:0x209e" # usually static
+  enable: true
+  red: false
+
+
+# VIDEO SECTION
+video:
+  delete_after_publishing: false # Whether to delete local copies of videos

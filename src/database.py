@@ -1,0 +1,44 @@
+import typing as tp
+
+from loguru import logger
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCollection
+
+from models import Employee
+from shared.Config import Config
+from shared.Singleton import SingletonMeta
+
+
+class MongoDbWrapper(metaclass=SingletonMeta):
+    """A database wrapper implementation for MongoDB"""
+
+    def __init__(self) -> None:
+        """connect to database using credentials"""
+        logger.info("Connecting to MongoDB")
+        mongo_client_url: str = (
+            Config().global_config["mongo_db"]["mongo_connection_url"] + "&ssl=true&ssl_cert_reqs=CERT_NONE"
+        )
+        mongo_client: AsyncIOMotorClient = AsyncIOMotorClient(mongo_client_url)
+
+        self._database = mongo_client["Feecc-Hub"]
+        self._employee_collection: AsyncIOMotorCollection = self._database["Employee-data"]
+
+        logger.info("Connected to MongoDB")
+
+    @staticmethod
+    async def _get_element_by_key(collection_: AsyncIOMotorCollection, key: str, value: str) -> tp.Dict[str, tp.Any]:
+        result: tp.Dict[str, tp.Any] = await collection_.find_one({key: value}, {"_id": 0})
+
+        if not result:
+            raise ValueError(f"No results found for query '{key}:{value}'")
+
+        return result
+
+    async def get_concrete_employee(self, card_id: str) -> Employee:
+        try:
+            employee_data = await self._get_element_by_key(self._employee_collection, key="rfid_card_id", value=card_id)
+        except ValueError:
+            raise ValueError(f"Employee with card id {card_id} not found")
+
+        return Employee(
+            name=employee_data["name"], position=employee_data["position"], rfid_card_id=employee_data["rfid_card_id"]
+        )

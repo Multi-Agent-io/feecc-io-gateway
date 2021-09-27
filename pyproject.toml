@@ -1,0 +1,37 @@
+[tool.poetry]
+name = "feecc-io-gateway"
+version = "0.1.0"
+description = ""
+authors = ["arseniiarsenii <arseniivelichko2@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+fastapi = "^0.68.1"
+loguru = "^0.5.3"
+httpx = "^0.19.0"
+ipfshttpclient = "^0.8.0a2"
+PyYAML = "^5.4.1"
+Pillow = "^8.3.2"
+brother-ql = "^0.9.4"
+uvicorn = "^0.15.0"
+python-multipart = "^0.0.5"
+motor = "^2.5.1"
+dnspython = "^2.1.0"
+
+[tool.poetry.dev-dependencies]
+mypy = "^0.910"
+black = "^21.9b0"
+flake8 = "^3.9.2"
+types-PyYAML = "^5.4.10"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+exclude = "test*"
+strict = true
+ignore_missing_imports  = true
+
+[tool.black]
+line-length = 120

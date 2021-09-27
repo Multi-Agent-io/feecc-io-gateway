@@ -1,0 +1,18 @@
+- number: 1
+  ip: 192.168.88.1
+  port: 554
+  login: login
+  password: password
+
+- number: 2
+  ip: 192.168.88.2
+  port: 554
+  login: login
+  password: password
+
+- number: 3
+  ip: 192.168.88.3
+  port: 554
+  login: login
+  password: password
+
