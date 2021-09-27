@@ -1,4 +1,4 @@
-<h2 align="center">Feecc Hub</h2>
+<h2 align="center">Feecc IO Gateway</h2>
 
 <p align="center">
     <img alt="Workflow status" src="https://img.shields.io/github/workflow/status/NETMVAS/feecc-agent-morsvyaz/Python%20CI?label=CI%20checks">
