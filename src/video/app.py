@@ -124,8 +124,8 @@ async def end_stuck_records(max_duration: int = 60 * 60, interval: int = 60) -> 
     while True:
         await asyncio.sleep(interval)
 
-        for rec_id, rec in filter(lambda r: r[1].is_ongoing, records.items()):
-            if len(rec) >= max_duration:
+        for rec_id, rec in records.items():
+            if rec.is_ongoing and len(rec) >= max_duration:
                 await records[rec_id].stop()
                 logger.warning(f"Recording {rec_id} exceeded {max_duration} s. and was stopped.")
 
