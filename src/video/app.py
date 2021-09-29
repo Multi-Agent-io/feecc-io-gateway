@@ -142,3 +142,15 @@ def startup_event() -> None:
     logger.info(f"Initialized {len(cameras)} cameras")
 
     asyncio.create_task(end_stuck_records())
+
+
+@router.on_event("shutdown")
+@logger.catch
+def shutdown_event() -> None:
+    """tasks to do at server shutdown"""
+    global records
+
+    for rec in records.values():
+        if rec.is_ongoing:
+            await rec.stop()
+            logger.warning(f"Recording {rec.record_id} was stopped due to server shutdown.")
