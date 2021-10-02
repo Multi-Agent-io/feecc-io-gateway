@@ -4,10 +4,11 @@ from dataclasses import asdict
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from loguru import logger
-from shared.Config import Config
 
 from .camera import Camera, Recording
-from .models import CameraList, GenericResponse, RecordList, StartRecordResponse
+from .models import CameraList, CameraModel, GenericResponse, RecordData, RecordList, StartRecordResponse
+from dependencies import authenticate
+from shared.Config import Config
 
 router = APIRouter()
 
@@ -35,7 +36,11 @@ def get_record_by_id(record_id: str) -> Recording:
     raise HTTPException(status.HTTP_404_NOT_FOUND, f"No such recording: {record_id}")
 
 
-@router.post("/video/camera/{camera_number}/start", response_model=tp.Union[StartRecordResponse, GenericResponse])  # type: ignore
+@router.post(
+    "/video/camera/{camera_number}/start",
+    dependencies=[Depends(authenticate)],
+    response_model=tp.Union[StartRecordResponse, GenericResponse],  # type: ignore
+)
 async def start_recording(
     camera: Camera = Depends(get_camera_by_number),
 ) -> tp.Union[StartRecordResponse, GenericResponse]:
@@ -61,7 +66,7 @@ async def start_recording(
         return GenericResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR, details=message)
 
 
-@router.post("/video/record/{record_id}/stop", response_model=GenericResponse)
+@router.post("/video/record/{record_id}/stop", dependencies=[Depends(authenticate)], response_model=GenericResponse)
 async def end_recording(record: Recording = Depends(get_record_by_id)) -> GenericResponse:
     """finish recording a video"""
 
@@ -81,7 +86,7 @@ async def end_recording(record: Recording = Depends(get_record_by_id)) -> Generi
 def get_cameras() -> CameraList:
     """return a list of all connected cameras"""
     global cameras
-    cameras_data = [{"number": camera.number, "host": camera.host} for camera in cameras.values()]
+    cameras_data = [CameraModel(number=camera.number, host=camera.host) for camera in cameras.values()]
     message = f"Collected {len(cameras_data)} cameras"
     logger.info(message)
 
@@ -99,11 +104,12 @@ def get_records() -> RecordList:
     for record in records.values():
         record_dict = asdict(record)
         del record_dict["process_ffmpeg"]
+        record_data = RecordData(**record_dict)
 
         if record.is_ongoing:
-            ongoing_records.append(record_dict)
+            ongoing_records.append(record_data)
         else:
-            ended_records.append(record_dict)
+            ended_records.append(record_data)
 
     message = f"Collected {len(ongoing_records)} ongoing and {len(ended_records)} ended records"
     logger.info(message)
@@ -146,7 +152,7 @@ def startup_event() -> None:
 
 @router.on_event("shutdown")
 @logger.catch
-def shutdown_event() -> None:
+async def shutdown_event() -> None:
     """tasks to do at server shutdown"""
     global records
 

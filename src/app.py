@@ -13,13 +13,20 @@ from video.app import router as video_router
 # apply logging configuration
 logger.configure(handlers=[CONSOLE_LOGGING_CONFIG, FILE_LOGGING_CONFIG])
 
+# describe endpoint tags
+tags = [
+    {"name": "Video", "description": "Video cameras and record management"},
+    {"name": "External IO", "description": "Everything related to IPFS and Pinata interaction"},
+    {"name": "Printing", "description": "Printer and printing related operations"},
+]
+
 # set up an ASGI app
-app = FastAPI(dependencies=[Depends(authenticate)])
+app = FastAPI(openapi_tags=tags)
 
 # include routers
-app.include_router(io_gateway_router)
-app.include_router(printing_router)
-app.include_router(video_router)
+app.include_router(io_gateway_router, dependencies=[Depends(authenticate)], tags=["External IO"])
+app.include_router(printing_router, dependencies=[Depends(authenticate)], tags=["Printing"])
+app.include_router(video_router, tags=["Video"])
 
 # allow CORS
 app.add_middleware(

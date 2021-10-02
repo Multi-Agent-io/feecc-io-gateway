@@ -1,9 +1,11 @@
 import typing as tp
+from datetime import datetime
+
 from pydantic import BaseModel
 
 
 class GenericResponse(BaseModel):
-    status: int
+    status: int  # an HTTP status code for a response
     details: str
 
 
@@ -11,10 +13,23 @@ class StartRecordResponse(GenericResponse):
     record_id: str
 
 
+class RecordData(BaseModel):
+    rtsp_steam: str
+    filename: tp.Optional[str]
+    record_id: str
+    start_time: tp.Optional[datetime]
+    end_time: tp.Optional[datetime]
+
+
 class RecordList(GenericResponse):
-    ongoing_records: tp.List[tp.Dict[str, tp.Any]]
-    ended_records: tp.List[tp.Dict[str, tp.Any]]
+    ongoing_records: tp.List[RecordData]
+    ended_records: tp.List[RecordData]
+
+
+class CameraModel(BaseModel):
+    number: int
+    host: str
 
 
 class CameraList(GenericResponse):
-    cameras: tp.List[tp.Dict[str, tp.Any]]
+    cameras: tp.List[CameraModel]
