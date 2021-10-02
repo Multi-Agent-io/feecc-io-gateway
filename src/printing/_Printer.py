@@ -11,23 +11,22 @@ from brother_ql import BrotherQLRaster, conversion
 from brother_ql.backends.helpers import send
 from loguru import logger
 
-from shared.Singleton import SingletonMeta
-from shared.Types import ConfigSection, GlobalConfig
+from ..shared.Singleton import SingletonMeta
+from ..shared.config import config
 
 
 class Printer(metaclass=SingletonMeta):
     """a printing task for the label printer. executed at init"""
 
-    def __init__(self, config: tp.Optional[GlobalConfig] = None) -> None:
-        self._config: ConfigSection = config.printer if config else {}
-        self._paper_width: str = str(self._config.paper_width)
-        self._model: str = str(self._config.printer_model)
+    def __init__(self) -> None:
+        self._paper_width: str = str(config.printer.paper_width)
+        self._model: str = config.printer.printer_model
         self._address: str = self._get_usb_address()
 
     @property
     def _enabled(self) -> bool:
         """check if device is enabled in config"""
-        return bool(self._config.enable)
+        return config.printer.enable
 
     @property
     def _connected(self) -> bool:
@@ -82,7 +81,7 @@ class Printer(metaclass=SingletonMeta):
         """print provided image"""
         logger.info(f"Printing image of size {image.size}")
         qlr: BrotherQLRaster = BrotherQLRaster(self._model)
-        red: bool = self._config.red
+        red: bool = config.printer.red
         conversion.convert(qlr, [image], self._paper_width, red=red)
         send(qlr.data, self._address)
 

@@ -3,7 +3,6 @@ from uuid import uuid4
 
 from fastapi import APIRouter, File, status
 from loguru import logger
-from shared.config import config
 
 from ._Printer import Printer
 from .models import GenericResponse, PrintImageRequest
@@ -42,7 +41,7 @@ def publish_file_to_pinata(print_request: PrintImageRequest, image_file: bytes =
 @logger.catch
 def startup_event() -> None:
     """tasks to do at server startup"""
-    Printer(config.global_config)
+    Printer()
     logger.info("Initialized printer")
 
     global CACHE_DIR

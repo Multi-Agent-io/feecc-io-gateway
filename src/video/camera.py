@@ -16,7 +16,7 @@ class Camera:
     """a wrapper for the video camera config"""
 
     ip: str
-    port: str
+    port: int
     login: str
     password: str
     number: int

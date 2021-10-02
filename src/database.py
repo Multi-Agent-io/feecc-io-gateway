@@ -3,9 +3,9 @@ import typing as tp
 from loguru import logger
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCollection
 
-from models import Employee
-from shared.config import config
-from shared.Singleton import SingletonMeta
+from .models import Employee
+from .shared.config import config
+from .shared.Singleton import SingletonMeta
 
 
 class MongoDbWrapper(metaclass=SingletonMeta):

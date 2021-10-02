@@ -1,8 +1,8 @@
 from fastapi import HTTPException, status, Request
 
-from database import MongoDbWrapper
-from models import Employee
-from shared.config import config
+from .database import MongoDbWrapper
+from .models import Employee
+from .shared.config import config
 
 
 async def authenticate(request: Request) -> Employee:

@@ -2,10 +2,10 @@ import typing as tp
 
 from fastapi import APIRouter, BackgroundTasks, status
 from loguru import logger
-from shared.config import config
 
 from . import ipfs, pinata
 from .models import GenericResponse, IpfsPublishResponse, PublishFileRequest
+from ..shared.config import config
 
 router = APIRouter()
 
