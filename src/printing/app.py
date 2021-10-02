@@ -12,8 +12,8 @@ CACHE_DIR = "printing_cache"
 router = APIRouter()
 
 
-@router.post("/printing/print_image", response_model=GenericResponse)
-def publish_file_to_pinata(print_request: PrintImageRequest, image_file: bytes = File(...)) -> GenericResponse:
+@router.post("/print_image", response_model=GenericResponse)
+def print_image(print_request: PrintImageRequest, image_file: bytes = File(...)) -> GenericResponse:
     """Print an image using label printer and annotate if necessary"""
 
     # save image file to disk for later printing

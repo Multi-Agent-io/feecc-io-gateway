@@ -37,7 +37,7 @@ def get_record_by_id(record_id: str) -> Recording:
 
 
 @router.post(
-    "/video/camera/{camera_number}/start",
+    "/camera/{camera_number}/start",
     dependencies=[Depends(authenticate)],
     response_model=tp.Union[StartRecordResponse, GenericResponse],  # type: ignore
 )
@@ -66,7 +66,7 @@ async def start_recording(
         return GenericResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR, details=message)
 
 
-@router.post("/video/record/{record_id}/stop", dependencies=[Depends(authenticate)], response_model=GenericResponse)
+@router.post("/record/{record_id}/stop", dependencies=[Depends(authenticate)], response_model=GenericResponse)
 async def end_recording(record: Recording = Depends(get_record_by_id)) -> GenericResponse:
     """finish recording a video"""
 
@@ -82,7 +82,7 @@ async def end_recording(record: Recording = Depends(get_record_by_id)) -> Generi
         return GenericResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR, details=message)
 
 
-@router.get("/video/cameras", response_model=CameraList)
+@router.get("/cameras", response_model=CameraList)
 def get_cameras() -> CameraList:
     """return a list of all connected cameras"""
     global cameras
@@ -93,7 +93,7 @@ def get_cameras() -> CameraList:
     return CameraList(status=status.HTTP_200_OK, details=message, cameras=cameras_data)
 
 
-@router.get("/video/records", response_model=RecordList)
+@router.get("/records", response_model=RecordList)
 def get_records() -> RecordList:
     """return a list of all tracked records"""
     global records

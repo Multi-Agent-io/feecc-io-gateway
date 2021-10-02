@@ -10,7 +10,7 @@ from ..shared.config import config
 router = APIRouter()
 
 
-@router.post("/io-gateway/pinata", response_model=tp.Union[IpfsPublishResponse, GenericResponse])  # type: ignore
+@router.post("/pinata", response_model=tp.Union[IpfsPublishResponse, GenericResponse])  # type: ignore
 async def publish_file_to_pinata(
     publish_request: PublishFileRequest, background_tasks: BackgroundTasks
 ) -> tp.Union[IpfsPublishResponse, GenericResponse]:
@@ -40,7 +40,7 @@ async def publish_file_to_pinata(
         return GenericResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR, details=message)
 
 
-@router.post("/io-gateway/ipfs", response_model=tp.Union[IpfsPublishResponse, GenericResponse])  # type: ignore
+@router.post("/ipfs", response_model=tp.Union[IpfsPublishResponse, GenericResponse])  # type: ignore
 def publish_file_to_ipfs(
     publish_request: PublishFileRequest, background_tasks: BackgroundTasks
 ) -> tp.Union[IpfsPublishResponse, GenericResponse]:
