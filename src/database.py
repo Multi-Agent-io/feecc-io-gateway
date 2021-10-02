@@ -4,7 +4,7 @@ from loguru import logger
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorCollection
 
 from models import Employee
-from shared.Config import Config
+from shared.config import config
 from shared.Singleton import SingletonMeta
 
 
@@ -14,9 +14,7 @@ class MongoDbWrapper(metaclass=SingletonMeta):
     def __init__(self) -> None:
         """connect to database using credentials"""
         logger.info("Connecting to MongoDB")
-        mongo_client_url: str = (
-            Config().global_config["mongo_db"]["mongo_connection_url"] + "&ssl=true&ssl_cert_reqs=CERT_NONE"
-        )
+        mongo_client_url: str = config.mongo_db.mongo_connection_url + "&ssl=true&ssl_cert_reqs=CERT_NONE"
         mongo_client: AsyncIOMotorClient = AsyncIOMotorClient(mongo_client_url)
 
         self._database = mongo_client["Feecc-Hub"]

@@ -2,7 +2,7 @@ import typing as tp
 
 from fastapi import APIRouter, BackgroundTasks, status
 from loguru import logger
-from shared.Config import Config
+from shared.config import config
 
 from . import ipfs, pinata
 from .models import GenericResponse, IpfsPublishResponse, PublishFileRequest
@@ -16,8 +16,8 @@ async def publish_file_to_pinata(
 ) -> tp.Union[IpfsPublishResponse, GenericResponse]:
     """publish a file into IPFS and Pinata"""
     filename = publish_request.filename
-    pinata_api = Config().global_config["pinata"]["pinata_api"]
-    pinata_secret_api = Config().global_config["pinata"]["pinata_secret_api"]
+    pinata_api = config.pinata.pinata_api
+    pinata_secret_api = config.pinata.pinata_secret_api
 
     try:
 

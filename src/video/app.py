@@ -8,7 +8,7 @@ from loguru import logger
 from .camera import Camera, Recording
 from .models import CameraList, CameraModel, GenericResponse, RecordData, RecordList, StartRecordResponse
 from dependencies import authenticate
-from shared.Config import Config
+from shared.config import config
 
 router = APIRouter()
 
@@ -142,8 +142,8 @@ def startup_event() -> None:
     """tasks to do at server startup"""
     global cameras
 
-    for section in Config().camera_config:
-        cameras[section["number"]] = Camera(**section)
+    for section in config.camera_config:
+        cameras[section.number] = Camera(**section)
 
     logger.info(f"Initialized {len(cameras)} cameras")
 
