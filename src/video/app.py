@@ -6,7 +6,15 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from loguru import logger
 
 from .camera import Camera, Recording
-from .models import CameraList, CameraModel, GenericResponse, RecordData, RecordList, StartRecordResponse
+from .models import (
+    CameraList,
+    CameraModel,
+    GenericResponse,
+    RecordData,
+    RecordList,
+    StartRecordResponse,
+    StopRecordResponse,
+)
 from ..dependencies import authenticate
 from ..shared.config import camera_config
 
@@ -66,15 +74,15 @@ async def start_recording(
         return GenericResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR, details=message)
 
 
-@router.post("/record/{record_id}/stop", dependencies=[Depends(authenticate)], response_model=GenericResponse)
-async def end_recording(record: Recording = Depends(get_record_by_id)) -> GenericResponse:
+@router.post("/record/{record_id}/stop", dependencies=[Depends(authenticate)], response_model=tp.Union[StopRecordResponse, GenericResponse])  # type: ignore
+async def end_recording(record: Recording = Depends(get_record_by_id)) -> tp.Union[StopRecordResponse, GenericResponse]:
     """finish recording a video"""
 
     try:
         await record.stop()
         message = f"Stopped recording video for recording {record.record_id}"
         logger.info(message)
-        return GenericResponse(status=status.HTTP_200_OK, details=message)
+        return StopRecordResponse(status=status.HTTP_200_OK, details=message, filename=record.filename)
 
     except Exception as e:
         message = f"Failed to stop recording video for recording {record.record_id}: {e}"

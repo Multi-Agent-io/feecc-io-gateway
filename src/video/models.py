@@ -13,6 +13,10 @@ class StartRecordResponse(GenericResponse):
     record_id: str
 
 
+class StopRecordResponse(GenericResponse):
+    filename: str
+
+
 class RecordData(BaseModel):
     rtsp_steam: str
     filename: tp.Optional[str]
