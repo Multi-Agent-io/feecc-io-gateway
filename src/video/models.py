@@ -18,7 +18,6 @@ class StopRecordResponse(GenericResponse):
 
 
 class RecordData(BaseModel):
-    rtsp_steam: str
     filename: tp.Optional[str]
     record_id: str
     start_time: tp.Optional[datetime]

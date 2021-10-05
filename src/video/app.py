@@ -1,6 +1,5 @@
 import asyncio
 import typing as tp
-from dataclasses import asdict
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from loguru import logger
@@ -79,6 +78,9 @@ async def end_recording(record: Recording = Depends(get_record_by_id)) -> tp.Uni
     """finish recording a video"""
 
     try:
+        if not record.is_ongoing:
+            raise ValueError("Recording is not currently ongoing thus cannot be stopped")
+
         await record.stop()
         message = f"Stopped recording video for recording {record.record_id}"
         logger.info(message)
@@ -110,9 +112,12 @@ def get_records() -> RecordList:
     ended_records = []
 
     for record in records.values():
-        record_dict = asdict(record)
-        del record_dict["process_ffmpeg"]
-        record_data = RecordData(**record_dict)
+        record_data = RecordData(
+            filename=record.filename,
+            record_id=record.record_id,
+            start_time=record.start_time,
+            end_time=record.end_time,
+        )
 
         if record.is_ongoing:
             ongoing_records.append(record_data)
