@@ -1,32 +1,19 @@
-import os
-from uuid import uuid4
+import typing as tp
 
-from fastapi import APIRouter, File, status
+from fastapi import APIRouter, File, Form, status
 from loguru import logger
 
 from ._Printer import Printer
-from .models import GenericResponse, PrintImageRequest
-
-CACHE_DIR = "printing_cache"
+from .models import GenericResponse
 
 router = APIRouter()
 
 
 @router.post("/print_image", response_model=GenericResponse)
-def print_image(print_request: PrintImageRequest, image_file: bytes = File(...)) -> GenericResponse:
+def print_image(image_file: bytes = File(...), annotation: tp.Optional[str] = Form(None)) -> GenericResponse:
     """Print an image using label printer and annotate if necessary"""
-
-    # save image file to disk for later printing
-    global CACHE_DIR
-    image_path = f"{CACHE_DIR}/{uuid4().hex}.png"
-
-    with open(image_path, "wb") as f:
-        f.write(image_file)
-
-    printer = Printer()
-
     try:
-        printer.print_image(image_path, print_request.annotation)
+        Printer().print_image(image_file, annotation)
         message = "Task handled as expected"
         logger.info(message)
         return GenericResponse(status=status.HTTP_200_OK, details=message)
@@ -43,7 +30,3 @@ def startup_event() -> None:
     """tasks to do at server startup"""
     Printer()
     logger.info("Initialized printer")
-
-    global CACHE_DIR
-    if not os.path.exists(CACHE_DIR):
-        os.mkdir(CACHE_DIR)

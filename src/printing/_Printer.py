@@ -1,3 +1,4 @@
+import io
 import re
 import textwrap
 import typing as tp
@@ -51,7 +52,7 @@ class Printer(metaclass=SingletonMeta):
             logger.error(f"An error occurred while parsing address: {E}")
             return ""
 
-    def print_image(self, image_path: str, annotation: tp.Optional[str] = None) -> None:
+    def print_image(self, image_data: tp.Union[str, bytes], annotation: tp.Optional[str] = None) -> None:
         """execute the task"""
         if not self._address:
             self._address = self._get_usb_address()
@@ -59,24 +60,31 @@ class Printer(metaclass=SingletonMeta):
         if not all((self._enabled, self._connected)):
             logger.info("Printer disabled in config or disconnected. Task dropped.")
             return
-        logger.info(f"Printing task created for image {image_path}")
-        image: Image = self._get_image(image_path)
 
-        if annotation is not None:
+        logger.info("Printing task created for image")
+
+        image: Image = self._get_image(image_data)
+
+        if annotation:
             image = self._annotate_image(image, annotation)
 
         self._print_image(image)
         logger.info("Printing task done")
 
-    def _get_image(self, image_path: str) -> Image:
+    def _get_image(self, image_data: tp.Union[str, bytes]) -> Image:
         """prepare and resize the image before printing"""
-        image = Image.open(image_path)
+        if isinstance(image_data, str):
+            image: Image = self._get_image(image_data)
+        else:
+            image = Image.open(io.BytesIO(image_data))
+
         w, h = image.size
         target_w = 696 if self._paper_width == "62" else 554
         target_h = int(h * (target_w / w))
         image = image.resize((target_w, target_h))
         return image
 
+    @logger.catch
     def _print_image(self, image: Image) -> None:
         """print provided image"""
         logger.info(f"Printing image of size {image.size}")
@@ -89,7 +97,7 @@ class Printer(metaclass=SingletonMeta):
     def _annotate_image(image: Image, text: str) -> Image:
         """add an annotation to the bottom of the image"""
         # wrap the message
-        font: FreeTypeFont = ImageFont.truetype("feecc_hub/fonts/helvetica-cyrillic-bold.ttf", 24)
+        font: FreeTypeFont = ImageFont.truetype("src/printing/fonts/helvetica-cyrillic-bold.ttf", 24)
         avg_char_width: float = mean((font.getsize(char)[0] for char in ascii_letters))
         img_w, img_h = image.size
         max_chars_in_line: int = int(img_w * 0.95 / avg_char_width)
