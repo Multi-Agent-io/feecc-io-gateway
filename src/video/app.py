@@ -73,7 +73,11 @@ async def start_recording(
         return GenericResponse(status=status.HTTP_500_INTERNAL_SERVER_ERROR, details=message)
 
 
-@router.post("/record/{record_id}/stop", dependencies=[Depends(authenticate)], response_model=tp.Union[StopRecordResponse, GenericResponse])  # type: ignore
+@router.post(
+    "/record/{record_id}/stop",
+    dependencies=[Depends(authenticate)],
+    response_model=tp.Union[StopRecordResponse, GenericResponse],  # type: ignore
+)
 async def end_recording(record: Recording = Depends(get_record_by_id)) -> tp.Union[StopRecordResponse, GenericResponse]:
     """finish recording a video"""
 
@@ -174,6 +178,8 @@ def startup_event() -> None:
 async def shutdown_event() -> None:
     """tasks to do at server shutdown"""
     global records
+
+    logger.info("Starting shutdown sequence")
 
     for rec in records.values():
         if rec.is_ongoing:
