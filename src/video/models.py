@@ -32,6 +32,7 @@ class RecordList(GenericResponse):
 class CameraModel(BaseModel):
     number: int
     host: str
+    is_up: bool
 
 
 class CameraList(GenericResponse):

@@ -10,6 +10,8 @@ from uuid import uuid4
 
 from loguru import logger
 
+from ..shared.config import camera_config
+
 
 @dataclass(frozen=True)
 class Camera:
@@ -118,3 +120,19 @@ class Recording:
         self.process_ffmpeg = None
         self.end_time = datetime.now()
         logger.info(f"Finished recording video for record {self.record_id}")
+
+
+cameras: tp.Dict[int, Camera] = {
+    section.number: Camera(
+        ip=section.ip,
+        port=section.port,
+        login=section.login,
+        password=section.password,
+        number=section.number,
+    )
+    for section in camera_config
+}
+
+logger.info(f"Initialized {len(cameras)} cameras")
+
+records: tp.Dict[str, Recording] = {}
