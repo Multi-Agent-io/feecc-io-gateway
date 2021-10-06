@@ -5,6 +5,7 @@ from loguru import logger
 
 from . import ipfs, pinata
 from .models import GenericResponse, IpfsPublishResponse, PublishFileRequest, PublishFileWBackground
+from .utils import check_presence
 from ..shared.config import config
 
 router = APIRouter()
@@ -16,6 +17,7 @@ async def publish_file_to_pinata(
 ) -> tp.Union[IpfsPublishResponse, GenericResponse]:
     """publish a file into IPFS and Pinata"""
     filename = publish_request.filename
+    check_presence(filename)
 
     try:
 
@@ -42,6 +44,7 @@ async def publish_file_to_pinata(
 def publish_file_to_ipfs(publish_request: PublishFileRequest) -> tp.Union[IpfsPublishResponse, GenericResponse]:
     """publish a file into IPFS"""
     filename = publish_request.filename
+    check_presence(filename)
 
     try:
         cid, uri = ipfs.publish_to_ipfs(filename)
