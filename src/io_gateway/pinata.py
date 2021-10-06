@@ -4,12 +4,14 @@ from time import time
 import httpx
 from loguru import logger
 
+from ..shared.config import config
+
 PINATA_ENDPOINT: str = "https://api.pinata.cloud"
+PINATA_API: str = config.pinata.pinata_api
+PINATA_SECRET_API: str = config.pinata.pinata_secret_api
 
 
 async def pin_file(
-    api_key: str,
-    secret_api_key: str,
     path_to_file: str,
     options: tp.Optional[tp.Dict[str, tp.Any]] = None,
     session: tp.Optional[httpx.AsyncClient] = None,
@@ -20,8 +22,8 @@ async def pin_file(
     url: str = f"{PINATA_ENDPOINT}/pinning/pinFileToIPFS"
     files = {"file": open(path_to_file, "rb")}
     headers = {
-        "pinata_api_key": api_key,
-        "pinata_secret_api_key": secret_api_key,
+        "pinata_api_key": PINATA_API,
+        "pinata_secret_api_key": PINATA_SECRET_API,
     }
 
     if options is not None:

@@ -8,6 +8,9 @@ class GenericResponse(BaseModel):
 
 class PublishFileRequest(BaseModel):
     filename: str
+
+
+class PublishFileWBackground(PublishFileRequest):
     background_processing: bool = True
 
 
