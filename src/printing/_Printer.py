@@ -22,24 +22,12 @@ class Printer(metaclass=SingletonMeta):
     def __init__(self) -> None:
         self._paper_width: str = str(config.printer.paper_width)
         self._model: str = config.printer.printer_model
-        self._address: str = self._get_usb_address()
+        self._enabled: bool = config.printer.enable
+
+        _ = self._address
 
     @property
-    def _enabled(self) -> bool:
-        """check if device is enabled in config"""
-        return config.printer.enable
-
-    @property
-    def _connected(self) -> bool:
-        """check if device is on the USB bus"""
-        try:
-            command: str = f'lsusb | grep "{self._model}" -o'
-            return bool(check_output(command, shell=True, text=True))
-        except Exception as E:
-            logger.debug(f"An error occurred while checking if device is connected: {E}")
-            return False
-
-    def _get_usb_address(self) -> str:
+    def _address(self) -> tp.Optional[str]:
         """Get printer USB bus address"""
         try:
             command: str = f'lsusb | grep "{self._model}"'
@@ -48,16 +36,15 @@ class Printer(metaclass=SingletonMeta):
             address: tp.List[str] = addresses[0].split(":")
             bus_address: str = f"usb://0x{address[0]}:0x{address[1]}"
             return bus_address
-        except Exception as E:
-            logger.error(f"An error occurred while parsing address: {E}")
-            return ""
+
+        except Exception as e:
+            logger.warning("Could not get the printer USB bus address. The printer may be disconnected.")
+            logger.debug(f"An error occurred while parsing USB address: {e}")
+            return None
 
     def print_image(self, image_data: tp.Union[str, bytes], annotation: tp.Optional[str] = None) -> None:
         """execute the task"""
-        if not self._address:
-            self._address = self._get_usb_address()
-
-        if not all((self._enabled, self._connected)):
+        if not all((self._enabled, self._address)):
             logger.info("Printer disabled in config or disconnected. Task dropped.")
             return
 
