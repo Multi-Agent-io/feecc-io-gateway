@@ -1,10 +1,10 @@
 import typing as tp
 
-from fastapi import APIRouter, BackgroundTasks, status
+from fastapi import APIRouter, BackgroundTasks, File, Form, status
 from loguru import logger
 
 from . import ipfs, pinata
-from .models import GenericResponse, IpfsPublishResponse, PublishFileRequest, PublishFileWBackground
+from .models import GenericResponse, IpfsPublishResponse
 from .utils import check_presence
 from ..shared.config import config
 
@@ -13,23 +13,30 @@ router = APIRouter()
 
 @router.post("/pinata", response_model=tp.Union[IpfsPublishResponse, GenericResponse])  # type: ignore
 async def publish_file_to_pinata(
-    publish_request: PublishFileWBackground, background_tasks: BackgroundTasks
+    background_tasks: BackgroundTasks,
+    filename: tp.Optional[str] = Form(None),
+    file_data: tp.Optional[bytes] = File(None),
+    background: bool = Form(True),
 ) -> tp.Union[IpfsPublishResponse, GenericResponse]:
-    """publish a file into IPFS and Pinata"""
-    filename = publish_request.filename
-    check_presence(filename)
+    """
+    publish a file into IPFS and Pinata
+
+    a file can be provided EITHER as multipart form data OR a string path-like filename to it on the host machine
+    """
+
+    if filename is not None:
+        check_presence(filename)
 
     try:
-
-        if publish_request.background_processing:
-            cid, uri = ipfs.publish_to_ipfs(filename)
-            background_tasks.add_task(pinata.pin_file, filename)
-            message = f"Added background pinning task for file {filename}"
+        if background:
+            cid, uri = ipfs.publish_to_ipfs(file_path=filename, file_contents=file_data)
+            background_tasks.add_task(pinata.pin_file, filename, file_data)
+            message = f"Added background pinning task for file {filename or ''}"
         else:
-            response = await pinata.pin_file(filename)
+            response = await pinata.pin_file(filename, file_data)
             cid = response["IpfsHash"]
             uri = config.ipfs.gateway_address + cid
-            message = f"File {filename} pinned"
+            message = f"File {filename or ''} pinned"
 
         logger.info(message)
         return IpfsPublishResponse(status=status.HTTP_200_OK, details=message, ipfs_cid=cid, ipfs_link=uri)
@@ -41,14 +48,22 @@ async def publish_file_to_pinata(
 
 
 @router.post("/ipfs", response_model=tp.Union[IpfsPublishResponse, GenericResponse])  # type: ignore
-def publish_file_to_ipfs(publish_request: PublishFileRequest) -> tp.Union[IpfsPublishResponse, GenericResponse]:
-    """publish a file into IPFS"""
-    filename = publish_request.filename
-    check_presence(filename)
+def publish_file_to_ipfs(
+    filename: tp.Optional[str] = Form(None),
+    file_data: tp.Optional[bytes] = File(None),
+) -> tp.Union[IpfsPublishResponse, GenericResponse]:
+    """
+    publish a file into IPFS
+
+    a file can be provided EITHER as multipart form data OR a string path-like filename to it on the host machine
+    """
+
+    if filename is not None:
+        check_presence(filename)
 
     try:
-        cid, uri = ipfs.publish_to_ipfs(filename)
-        message = f"File {filename} published"
+        cid, uri = ipfs.publish_to_ipfs(filename, file_data)
+        message = f"File {filename or ''} published"
         logger.info(message)
         return IpfsPublishResponse(status=status.HTTP_202_ACCEPTED, details=message, ipfs_cid=cid, ipfs_link=uri)
 
