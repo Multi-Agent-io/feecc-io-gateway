@@ -1,3 +1,4 @@
+import os
 import typing as tp
 
 import ipfshttpclient
@@ -5,17 +6,21 @@ from loguru import logger
 
 from ..shared.config import config
 
+IS_DOCKERIZED: bool = os.environ.get("IS_DOCKERIZED", False)
+
 
 def _get_ipfs_client() -> tp.Optional[ipfshttpclient.Client]:
-    node_address: str = "/dns/localhost/tcp/5001/http"
 
     if not config.ipfs.enable:
         logger.warning("IPFS capabilities are disabled in config-file")
         return None
 
     try:
+        node_address = f"/dns/{'ipfs-node' if IS_DOCKERIZED else 'localhost'}/tcp/5001/http"
+        client = ipfshttpclient.connect(addr=node_address)
         logger.info(f"Successfully connected to the IPFS node at {node_address}")
-        return ipfshttpclient.connect(addr=node_address)
+        return client
+
     except Exception as e:
         logger.error(f"An error occurred while getting IPFS client: {e}")
         return None
@@ -24,6 +29,7 @@ def _get_ipfs_client() -> tp.Optional[ipfshttpclient.Client]:
 IPFS_CLIENT: tp.Optional[ipfshttpclient.Client] = _get_ipfs_client()
 
 
+@logger.catch
 def publish_to_ipfs(file_path: tp.Optional[str] = None, file_contents: tp.Optional[bytes] = None) -> tp.Tuple[str, str]:
     """publish file on IPFS"""
 
