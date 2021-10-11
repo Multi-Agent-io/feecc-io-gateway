@@ -45,8 +45,9 @@ class Printer(metaclass=SingletonMeta):
     def print_image(self, image_data: tp.Union[str, bytes], annotation: tp.Optional[str] = None) -> None:
         """execute the task"""
         if not all((self._enabled, self._address)):
+            message = "Printer disabled in config or disconnected. Task dropped."
             logger.info("Printer disabled in config or disconnected. Task dropped.")
-            return
+            raise BrokenPipeError(message)
 
         logger.info("Printing task created for image")
 

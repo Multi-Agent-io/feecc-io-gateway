@@ -7,12 +7,15 @@ from ..shared.config import config
 
 
 def _get_ipfs_client() -> tp.Optional[ipfshttpclient.Client]:
+    node_address: str = "/dns/localhost/tcp/5001/http"
+
     if not config.ipfs.enable:
         logger.warning("IPFS capabilities are disabled in config-file")
         return None
 
     try:
-        return ipfshttpclient.connect()
+        logger.info(f"Successfully connected to the IPFS node at {node_address}")
+        return ipfshttpclient.connect(addr=node_address)
     except Exception as e:
         logger.error(f"An error occurred while getting IPFS client: {e}")
         return None
