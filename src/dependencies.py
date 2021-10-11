@@ -5,7 +5,7 @@ from .models import Employee
 from .shared.config import config
 
 
-async def authenticate(rfid_card_id: str = Header(...)) -> Employee:
+async def authenticate(rfid_card_id: str = Header("1111111111")) -> Employee:
     try:
         if rfid_card_id == "1111111111" and config.api_server.production_environment:
             raise ValueError("Development credentials are not allowed in production environment")
