@@ -1,7 +1,6 @@
 version: "3"
 services:
-  ipfs-node:
-    restart: always
+  ipfs_node:
     image: ipfs/go-ipfs:v0.8.0
     volumes:
       - ~/ipfs/ipfs_staging:/export
@@ -11,8 +10,10 @@ services:
       - "8081:8080"
       - "4001:4001"
 
-  feecc-io-gateway:
+  feecc_io_gateway:
     build:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
+    links:
+      - ipfs_node:ipfs
