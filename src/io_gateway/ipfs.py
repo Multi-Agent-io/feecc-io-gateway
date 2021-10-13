@@ -1,3 +1,4 @@
+import io
 import os
 import typing as tp
 from time import sleep
@@ -52,7 +53,7 @@ def publish_to_ipfs(file_path: tp.Optional[str] = None, file_contents: tp.Option
     if client is None:
         raise ConnectionError(f"Connection to IPFS node failed, cannot publish file {file_path or ''}")
 
-    result = client.add(file_path or file_contents)
+    result = client.add(file_path or io.BytesIO(file_contents))
     ipfs_hash: str = result["Hash"]
     ipfs_link: str = config.ipfs.gateway_address + ipfs_hash
     logger.info(f"File {file_path or ''} published to IPFS, hash: {ipfs_hash}")
