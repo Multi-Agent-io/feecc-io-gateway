@@ -23,16 +23,15 @@ async def publish_file_to_pinata(
     a file can be provided EITHER as multipart form data OR a string path-like filename to it on the host machine
     """
 
-    # make sure only one of the arguments is provided
-    if bool(filename) == bool(file_data):
-        raise ValueError("This operation accepts either one of its arguments but not both or none of them")
-    elif filename is not None:
+    if filename is not None:
         check_presence(filename)
         file: bytes = open(filename, "rb").read()
-        filename_ = os.path.basename(filename)
+        filename_: str = os.path.basename(filename)
     elif file_data is not None:
         file = await file_data.read()
         filename_ = file_data.filename
+    else:
+        raise ValueError("This operation accepts either one of its arguments but not both or none of them")
 
     try:
         response = await pinata.pin_file(file, filename_)
@@ -63,7 +62,7 @@ async def publish_file_to_ipfs(
         check_presence(filename)
 
     try:
-        cid, uri = ipfs.publish_to_ipfs(filename, await file_data.read())
+        cid, uri = ipfs.publish_to_ipfs(filename, await file_data.read() if file_data else None)
         message = f"File {filename or file_data.filename} published"
         logger.info(message)
         return IpfsPublishResponse(status=status.HTTP_200_OK, details=message, ipfs_cid=cid, ipfs_link=uri)

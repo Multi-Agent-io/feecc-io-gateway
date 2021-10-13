@@ -42,18 +42,20 @@ IPFS_CLIENT: tp.Optional[ipfshttpclient.Client] = _get_ipfs_client()
 @logger.catch
 def publish_to_ipfs(file_path: tp.Optional[str] = None, file_contents: tp.Optional[bytes] = None) -> tp.Tuple[str, str]:
     """publish file on IPFS"""
-
-    # make sure only one of the arguments is provided
-    if bool(file_path) == bool(file_contents):
-        raise ValueError("Publish to IPFS accepts either one of its arguments but not both or none of them")
-
     logger.info(f"Publishing file {file_path or ''} to IPFS")
     client = IPFS_CLIENT or _get_ipfs_client()
 
     if client is None:
         raise ConnectionError(f"Connection to IPFS node failed, cannot publish file {file_path or ''}")
 
-    result = client.add(file_path or io.BytesIO(file_contents))
+    if file_contents is not None:
+        file: tp.Union[str, io.BytesIO] = io.BytesIO(file_contents)
+    elif file_path is not None:
+        file = file_path
+    else:
+        raise ValueError("Neither filename nor binary file data provided")
+
+    result = client.add(file)
     ipfs_hash: str = result["Hash"]
     ipfs_link: str = config.ipfs.gateway_address + ipfs_hash
     logger.info(f"File {file_path or ''} published to IPFS, hash: {ipfs_hash}")
