@@ -17,3 +17,5 @@ services:
       - "8000:8000"
     links:
       - ipfs_node:ipfs
+    volumes:
+      - /dev/usb:/dev/usb
