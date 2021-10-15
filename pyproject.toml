@@ -24,6 +24,7 @@ black = "^21.9b0"
 flake8 = "^3.9.2"
 types-PyYAML = "^5.4.10"
 vulture = "^2.3"
+pytest = "^6.2.5"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
