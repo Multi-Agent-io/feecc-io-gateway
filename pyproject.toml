@@ -17,6 +17,7 @@ uvicorn = "^0.15.0"
 python-multipart = "^0.0.5"
 motor = "^2.5.1"
 dnspython = "^2.1.0"
+pytest-docker-compose = "^3.2.1"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.910"
@@ -37,3 +38,11 @@ ignore_missing_imports  = true
 
 [tool.black]
 line-length = 120
+
+[tool.pytest.ini_options]
+markers = [
+    "base: test server availability (deselect with '-m \"not base\"')",
+    "printer: test things that requires printer (deselect with '-m \"not printer\"')",
+    "video: test things that depend on the camera (deselect with '-m \"not camera\"')",
+    "device: test things that depends on any connected device (deselect with '-m \"not device\"')",
+]
