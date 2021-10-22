@@ -24,8 +24,6 @@ class Printer(metaclass=SingletonMeta):
         self._model: str = config.printer.printer_model
         self._enabled: bool = config.printer.enable
 
-        _ = self._address
-
     @property
     def _address(self) -> tp.Optional[str]:
         """Get printer USB bus address"""
@@ -42,6 +40,7 @@ class Printer(metaclass=SingletonMeta):
             logger.debug(f"An error occurred while parsing USB address: {e}")
             return None
 
+    @logger.catch(reraise=True)
     def print_image(self, image_data: tp.Union[str, bytes], annotation: tp.Optional[str] = None) -> None:
         """execute the task"""
         if not all((self._enabled, self._address)):
@@ -62,7 +61,7 @@ class Printer(metaclass=SingletonMeta):
     def _get_image(self, image_data: tp.Union[str, bytes]) -> Image:
         """prepare and resize the image before printing"""
         if isinstance(image_data, str):
-            image: Image = self._get_image(image_data)
+            image: Image = Image.open(image_data)
         else:
             image = Image.open(io.BytesIO(image_data))
 
