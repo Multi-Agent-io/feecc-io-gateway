@@ -15,9 +15,9 @@ services:
       dockerfile: Dockerfile
     ports:
       - "0.0.0.0:8000:8000"
-    links:
-      - ipfs_node:ipfs
+    network_mode: "host"
     volumes:
+      - "./output:/output"
       - "/dev/usb:/dev/usb"
       - "/etc/timezone:/etc/timezone:ro"
       - "/etc/localtime:/etc/localtime:ro"

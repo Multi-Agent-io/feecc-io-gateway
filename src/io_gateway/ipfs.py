@@ -22,9 +22,8 @@ def _get_ipfs_client() -> tp.Optional[ipfshttpclient.Client]:
     retry_delay = 5
     for i in range(5):
         try:
-            node_address = f"/dns/{'ipfs' if IS_DOCKERIZED else 'localhost'}/tcp/5001/http"
-            client = ipfshttpclient.connect(addr=node_address)
-            logger.info(f"Successfully connected to the IPFS node at {node_address}")
+            client = ipfshttpclient.connect()
+            logger.info("Successfully connected to the IPFS node")
             return client
 
         except Exception as e:
