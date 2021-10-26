@@ -13,14 +13,14 @@ tests_cache: tp.Dict[str, str] = {}
 @pytest.mark.video
 def test_get_video_cameras_list() -> None:
     resp = test_client.get("/video/cameras")
-    assert resp.ok is True, resp.text
+    assert resp.ok, resp.text
     assert resp.json().get("cameras", None) is not None, "No cameras found (check config)"
 
 
 @pytest.mark.video
 def test_get_video_records_list() -> None:
     resp = test_client.get("/video/records")
-    assert resp.ok is True, resp.text
+    assert resp.ok, resp.text
     assert resp.json().get("ongoing_records", None) is None, "when did we started recording?"
     assert resp.json().get("ended_records", None) is None, "when did we ended recording?"
 
@@ -28,7 +28,7 @@ def test_get_video_records_list() -> None:
 @pytest.mark.video
 def test_start_first_record() -> None:  # TODO
     resp = test_client.post("/video/camera/1/start")
-    assert resp.ok is True, resp.text
+    assert resp.ok, resp.text
     assert resp.status_code == 200, resp.json().get("details", None)
 
     tests_cache["first_rec"] = resp.json().get("record_id")
@@ -40,7 +40,7 @@ def test_start_first_record() -> None:  # TODO
 @pytest.mark.video
 def test_stop_first_record() -> None:
     resp = test_client.post("/video/camera/1/stop", json={"record_id": tests_cache["first_rec"]})
-    assert resp.ok is True, resp.text
+    assert resp.ok, resp.text
     assert resp.status_code == 200, resp.json().get("details", None)
 
     records_list_resp = test_client.get("/video/records")
@@ -50,14 +50,14 @@ def test_stop_first_record() -> None:
 @pytest.mark.video
 def test_stop_first_record_again() -> None:
     resp = test_client.post("/video/camera/1/stop", json={"record_id": tests_cache["first_rec"]})
-    assert resp.ok is True, resp.text
+    assert resp.ok, resp.text
     assert resp.status_code == 500, f"stopped nonexistent record : {resp.json().get('details', None)}"
 
 
 @pytest.mark.video
 def test_start_second_record() -> None:
     resp = test_client.post("/video/camera/1/start")
-    assert resp.ok is True, resp.text
+    assert resp.ok, resp.text
     assert resp.status_code == 200, resp.json().get("details", None)
 
     tests_cache["second_rec"] = resp.json().get("record_id")
@@ -72,7 +72,7 @@ def test_start_second_record() -> None:
 @pytest.mark.video
 def test_stop_second_record() -> None:
     resp = test_client.post("/video/camera/1/stop", json={"record_id": tests_cache["second_rec"]})
-    assert resp.ok is True, resp.text
+    assert resp.ok, resp.text
     assert resp.status_code == 200, resp.json().get("details", None)
 
     records_list_resp = test_client.get("/video/records")
@@ -99,6 +99,6 @@ def test_multiple_records_cycle() -> None:
     end_first_rec_resp = test_client.post("/video/camera/1/stop", json={
         "record_id": second_rec_resp.json().get("record_id")})
 
-    assert end_second_rec_resp.ok is True, end_second_rec_resp.text
-    assert end_first_rec_resp.ok is True, end_first_rec_resp.text
+    assert end_second_rec_resp.ok, end_second_rec_resp.text
+    assert end_first_rec_resp.ok, end_first_rec_resp.text
     assert end_first_rec_resp.status_code == end_second_rec_resp.status_code, "An error occurred while trying to stop record 1 or 2"

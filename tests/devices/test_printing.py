@@ -22,7 +22,7 @@ def test_img() -> str:
 def test_print_image(test_img) -> None:
     """FIXME: check behaviour"""
     resp = test_client.post("/printing/print_image", files={"image_file": open(test_img, "rb")})
-    assert resp.ok is True
+    assert resp.ok
     assert resp.status_code == 200
 
 
@@ -30,5 +30,5 @@ def test_print_image(test_img) -> None:
 def test_print_image_annotated(test_img) -> None:
     resp = test_client.post("/printing/print_image", files={"image_file": open(test_img, "rb")},
                             json={"annotation": "image with annotation"})
-    assert resp.ok is True
+    assert resp.ok
     assert resp.status_code == 200
