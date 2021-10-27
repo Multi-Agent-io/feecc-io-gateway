@@ -9,3 +9,7 @@ class GenericResponse(BaseModel):
 class IpfsPublishResponse(GenericResponse):
     ipfs_cid: str
     ipfs_link: str
+
+
+class AbsolutePath(BaseModel):
+    absolute_path: str

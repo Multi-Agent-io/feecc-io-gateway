@@ -1,4 +1,4 @@
-import io
+import os
 import typing as tp
 from time import time
 
@@ -10,41 +10,25 @@ from ..shared.config import config
 PINATA_ENDPOINT: str = "https://api.pinata.cloud"
 PINATA_API: str = config.pinata.pinata_api
 PINATA_SECRET_API: str = config.pinata.pinata_secret_api
+AUTH_HEADERS = {
+    "pinata_api_key": PINATA_API,
+    "pinata_secret_api_key": PINATA_SECRET_API,
+}
 
 
-@logger.catch
-async def pin_file(
-    file_contents: bytes,
-    filename: str,
-    options: tp.Optional[tp.Dict[str, tp.Any]] = None,
-    session: tp.Optional[httpx.AsyncClient] = None,
-) -> tp.Dict[str, tp.Any]:
-    # make sure only one of the arguments is provided
-    logger.info(f"Pushing file {filename} to Pinata")
+@logger.catch(reraise=True)
+async def pin_file(file: tp.Union[os.PathLike[tp.AnyStr], tp.IO[bytes]]) -> tp.Tuple[str, str]:
+    logger.info("Pushing file to Pinata")
     t0 = time()
-    url: str = f"{PINATA_ENDPOINT}/pinning/pinFileToIPFS"
-    files = {"file": io.BytesIO(file_contents)}
-    headers = {
-        "pinata_api_key": PINATA_API,
-        "pinata_secret_api_key": PINATA_SECRET_API,
-    }
 
-    if options is not None:
-        if "pinataMetadata" in options:
-            files["pinataMetadata"] = options["pinataMetadata"]
-        if "pinataOptions" in options:
-            files["pinataOptions"] = options["pinataOptions"]
+    files = {"file": open(file, "rb") if isinstance(file, os.PathLike) else file}
+    async with httpx.AsyncClient(base_url=PINATA_ENDPOINT) as client:
+        response = await client.post("/pinning/pinFileToIPFS", files=files, headers=AUTH_HEADERS)
 
-    if session is None:
-        async with httpx.AsyncClient() as client:
-            request = await client.post(url, files=files, headers=headers)
-    else:
-        request = await session.post(url, files=files, headers=headers)
-
-    logger.info(f"Published file {filename} to Pinata.")
+    data = response.json()
+    ipfs_hash: str = data["IpfsHash"]
+    ipfs_link: str = config.ipfs.gateway_address + ipfs_hash
+    logger.info("Published file to Pinata.")
     logger.debug(f"Push took {round(time() - t0, 3)} s.")
-
-    if request.status_code != 200:
-        raise ConnectionError(request.text)
-    logger.debug(request.json())
-    return request.json()  # type: ignore
+    logger.debug(data)
+    return ipfs_hash, ipfs_link

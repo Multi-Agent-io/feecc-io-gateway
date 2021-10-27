@@ -1,4 +1,3 @@
-import io
 import os
 import typing as tp
 from time import sleep
@@ -12,7 +11,7 @@ IS_DOCKERIZED: bool = bool(os.environ.get("IS_DOCKERIZED", False))
 logger.info(f"App {'is' if IS_DOCKERIZED else 'is not'} running in a containerized environment")
 
 
-@logger.catch
+@logger.catch(reraise=True)
 def _get_ipfs_client() -> tp.Optional[ipfshttpclient.Client]:
 
     if not config.ipfs.enable:
@@ -38,24 +37,17 @@ def _get_ipfs_client() -> tp.Optional[ipfshttpclient.Client]:
 IPFS_CLIENT: tp.Optional[ipfshttpclient.Client] = _get_ipfs_client()
 
 
-@logger.catch
-def publish_to_ipfs(file_path: tp.Optional[str] = None, file_contents: tp.Optional[bytes] = None) -> tp.Tuple[str, str]:
+@logger.catch(reraise=True)
+def publish_to_ipfs(file: tp.Union[os.PathLike[tp.AnyStr], tp.IO[bytes]]) -> tp.Tuple[str, str]:
     """publish file on IPFS"""
-    logger.info(f"Publishing file {file_path or ''} to IPFS")
+    logger.info("Publishing file to IPFS")
+
     client = IPFS_CLIENT or _get_ipfs_client()
-
     if client is None:
-        raise ConnectionError(f"Connection to IPFS node failed, cannot publish file {file_path or ''}")
-
-    if file_contents is not None:
-        file: tp.Union[str, io.BytesIO] = io.BytesIO(file_contents)
-    elif file_path is not None:
-        file = file_path
-    else:
-        raise ValueError("Neither filename nor binary file data provided")
+        raise ConnectionError("Connection to IPFS node failed, cannot publish file")
 
     result = client.add(file)
     ipfs_hash: str = result["Hash"]
     ipfs_link: str = config.ipfs.gateway_address + ipfs_hash
-    logger.info(f"File {file_path or ''} published to IPFS, hash: {ipfs_hash}")
+    logger.info(f"File published to IPFS, hash: {ipfs_hash}")
     return ipfs_hash, ipfs_link
