@@ -25,7 +25,7 @@ def print_image(image_file: bytes = File(...), annotation: tp.Optional[str] = Fo
 
 
 @router.on_event("startup")
-@logger.catch
+@logger.catch(reraise=True)
 def startup_event() -> None:
     """tasks to do at server startup"""
     Printer()

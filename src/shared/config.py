@@ -7,7 +7,7 @@ from loguru import logger
 from .config_models import GlobalConfig, CameraConfigSection
 
 
-@logger.catch
+@logger.catch(reraise=True)
 @tp.no_type_check
 def _load_config(config_path: str, model) -> tp.Any:
     logger.debug(f"Looking for config in {config_path}")

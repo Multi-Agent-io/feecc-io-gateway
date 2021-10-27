@@ -71,7 +71,7 @@ class Printer(metaclass=SingletonMeta):
         image = image.resize((target_w, target_h))
         return image
 
-    @logger.catch
+    @logger.catch(reraise=True)
     def _print_image(self, image: Image) -> None:
         """print provided image"""
         logger.info(f"Printing image of size {image.size}")

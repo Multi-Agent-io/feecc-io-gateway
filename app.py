@@ -38,7 +38,7 @@ app.add_middleware(
 
 
 @app.on_event("startup")
-@logger.catch
+@logger.catch(reraise=True)
 def startup_event() -> None:
     """tasks to do at server startup"""
     MongoDbWrapper()

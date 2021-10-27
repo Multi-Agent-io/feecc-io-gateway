@@ -111,14 +111,14 @@ def get_records() -> RecordList:
 
 
 @router.on_event("startup")
-@logger.catch
+@logger.catch(reraise=True)
 def startup_event() -> None:
     """tasks to do at server startup"""
     asyncio.create_task(end_stuck_records())
 
 
 @router.on_event("shutdown")
-@logger.catch
+@logger.catch(reraise=True)
 async def shutdown_event() -> None:
     """tasks to do at server shutdown"""
     for rec in records.values():
