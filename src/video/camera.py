@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import asyncio.subprocess as subprocess
+import asyncio
 import os
 import socket
 import typing as tp
@@ -11,6 +11,8 @@ from uuid import uuid4
 from loguru import logger
 
 from ..shared.config import camera_config
+
+MINIMAL_RECORD_DURATION_SEC = 3
 
 
 @dataclass(frozen=True)
@@ -60,7 +62,7 @@ class Recording:
 
     rtsp_steam: str
     filename: tp.Optional[str] = None
-    process_ffmpeg: tp.Optional[subprocess.Process] = None
+    process_ffmpeg: tp.Optional[asyncio.subprocess.Process] = None
     record_id: str = field(default_factory=lambda: uuid4().hex)
     start_time: tp.Optional[datetime] = None
     end_time: tp.Optional[datetime] = None
@@ -99,11 +101,11 @@ class Recording:
         """Execute ffmpeg command"""
         # ffmpeg -rtsp_transport tcp -i "rtsp://login:password@ip:port/Streaming/Channels/101" -c copy -map 0 vid.mp4
         command: str = f'ffmpeg -rtsp_transport tcp -i "{self.rtsp_steam}" -r 25 -c copy -map 0 {self.filename}'
-        self.process_ffmpeg = await subprocess.create_subprocess_shell(
+        self.process_ffmpeg = await asyncio.subprocess.create_subprocess_shell(
             cmd=command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            stdin=subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            stdin=asyncio.subprocess.PIPE,
         )
         self.start_time = datetime.now()
         logger.info(f"Started recording video '{self.filename}' using ffmpeg")
@@ -114,6 +116,13 @@ class Recording:
             logger.error(f"Failed to stop record {self.record_id}")
             logger.debug(f"Operation ongoing: {self.is_ongoing}, ffmpeg process: {bool(self.process_ffmpeg)}")
             return
+
+        if len(self) < MINIMAL_RECORD_DURATION_SEC:
+            logger.warning(
+                f"Recording {self.record_id} duration is below allowed minimum ({MINIMAL_RECORD_DURATION_SEC=}s). "
+                "Waiting for it to reach it before stopping."
+            )
+            await asyncio.sleep(MINIMAL_RECORD_DURATION_SEC - len(self))
 
         self.process_ffmpeg.terminate()
         await self.process_ffmpeg.wait()
