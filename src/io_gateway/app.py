@@ -1,3 +1,4 @@
+import asyncio
 import os
 import typing as tp
 from pathlib import Path
@@ -65,15 +66,14 @@ async def publish_file_to_ipfs_as_upload(
 
 
 async def publish_file(file: tp.Union[os.PathLike[tp.AnyStr], tp.IO[bytes]]) -> tp.Tuple[str, str]:
-    if not config.ipfs.enable and not config.pinata.enable:
-        raise ValueError("Both IPFS and Pinata are disabled in config, cannot get CID")
-
-    cid, uri = "", ""
-
-    if config.ipfs.enable:
+    if config.ipfs.enable and config.pinata.enable:
         cid, uri = ipfs.publish_to_ipfs(file)
-
-    if config.pinata.enable:
+        asyncio.create_task(pinata.pin_file(file))
+    elif config.ipfs.enable:
+        cid, uri = ipfs.publish_to_ipfs(file)
+    elif config.pinata.enable:
         cid, uri = await pinata.pin_file(file)
+    else:
+        raise ValueError("Both IPFS and Pinata are disabled in config, cannot get CID")
 
     return cid, uri
