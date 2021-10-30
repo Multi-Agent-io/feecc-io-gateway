@@ -86,12 +86,7 @@ class Recording:
         """determine a valid video name not to override an existing video"""
         if not os.path.isdir(dir_):
             os.makedirs(dir_)
-        filename = f"{dir_}/{self.record_id}_video_1.mp4"
-        cnt: int = 1
-        while os.path.exists(filename):
-            filename = filename.replace(f"video_{cnt}", f"video_{cnt + 1}")
-            cnt += 1
-        return filename
+        return f"{dir_}/{self.record_id}.mp4"
 
     @property
     def is_ongoing(self) -> bool:
