@@ -5,7 +5,7 @@ description = ""
 authors = ["arseniiarsenii <arseniivelichko2@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.8"
 fastapi = "^0.68.1"
 loguru = "^0.5.3"
 httpx = "^0.19.0"
