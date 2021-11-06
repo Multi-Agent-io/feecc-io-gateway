@@ -55,5 +55,4 @@ class CameraConfigSection(ConfigSection):
     number: int
     ip: str
     port: int
-    login: str
-    password: str
+    rtsp_stream_link: str

@@ -21,9 +21,8 @@ class Camera:
 
     ip: str
     port: int
-    login: str
-    password: str
     number: int
+    rtsp_stream_link: str
 
     def __post_init__(self) -> None:
         self.is_up()
@@ -34,10 +33,6 @@ class Camera:
     @property
     def host(self) -> str:
         return f"{self.ip}:{self.port}"
-
-    @property
-    def rtsp_stream_link(self) -> str:
-        return f"rtsp://{self.login}:{self.password}@{self.ip}:{self.port}/Streaming/Channels/101"
 
     def is_up(self) -> bool:
         """check if camera is reachable on the specified port and ip"""
@@ -130,9 +125,8 @@ cameras: tp.Dict[int, Camera] = {
     section.number: Camera(
         ip=section.ip,
         port=section.port,
-        login=section.login,
-        password=section.password,
         number=section.number,
+        rtsp_stream_link=section.rtsp_stream_link,
     )
     for section in camera_config
 }
