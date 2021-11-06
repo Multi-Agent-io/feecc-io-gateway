@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import signal
 import socket
 import typing as tp
 from dataclasses import dataclass, field
@@ -98,7 +99,7 @@ class Recording:
             stdin=asyncio.subprocess.PIPE,
         )
         self.start_time = datetime.now()
-        logger.info(f"Started recording video '{self.filename}' using ffmpeg")
+        logger.info(f"Started recording video '{self.filename}' using ffmpeg. {self.process_ffmpeg.pid=}")
 
     async def stop(self) -> None:
         """stop recording a video"""
@@ -114,7 +115,8 @@ class Recording:
             )
             await asyncio.sleep(MINIMAL_RECORD_DURATION_SEC - len(self))
 
-        self.process_ffmpeg.terminate()
+        logger.info(f"Trying to stop record {self.record_id} process {self.process_ffmpeg.pid=}")
+        self.process_ffmpeg.send_signal(signal.SIGINT)
         await self.process_ffmpeg.wait()
         self.process_ffmpeg = None
         self.end_time = datetime.now()
