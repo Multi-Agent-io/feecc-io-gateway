@@ -9,11 +9,9 @@ from .. import test_client
 
 @pytest.fixture
 def test_img() -> str:
-    test_picture = "test_img.svg"
+    test_picture = "test_img.png"
     if not os.path.exists(test_picture):
-        robonomics_logo = (
-            "https://robonomics.network/assets/static/robonomics-logo.4520fc0.674fd3b96847876764f360539d019573.svg"
-        )
+        robonomics_logo = "https://upload.wikimedia.org/wikipedia/commons/3/3d/Dvach_logo.png"
         logo = requests.get(robonomics_logo)
         with open(test_picture, "wb") as f:
             f.write(logo.content)
@@ -25,7 +23,7 @@ def test_print_image(test_img) -> None:
     """FIXME: check behaviour"""
     resp = test_client.post("/printing/print_image", files={"image_file": open(test_img, "rb")})
     assert resp.ok
-    assert resp.status_code == 200
+    assert resp.json().get("status") == 200
 
 
 @pytest.mark.printer
@@ -33,7 +31,7 @@ def test_print_image_annotated(test_img) -> None:
     resp = test_client.post(
         "/printing/print_image",
         files={"image_file": open(test_img, "rb")},
-        json={"annotation": "image with annotation"},
+        data={"annotation": "image with annotation"},
     )
     assert resp.ok
-    assert resp.status_code == 200
+    assert resp.json().get("status") == 200
