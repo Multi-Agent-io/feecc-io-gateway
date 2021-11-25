@@ -27,7 +27,7 @@ def test_get_video_records_list() -> None:
 
 @pytest.mark.video
 def test_start_first_record() -> None:  # TODO
-    resp = test_client.post("/video/camera/1/start")
+    resp = test_client.post("/video/camera/222/start")
     assert resp.ok, resp.text
     assert resp.status_code == 200, resp.json().get("details", None)
 
@@ -52,12 +52,12 @@ def test_stop_first_record() -> None:
 @pytest.mark.video
 def test_stop_first_record_again() -> None:
     resp = test_client.post(f"/video/record/{tests_cache['first_rec']}/stop")
-    assert resp.status_code == 404, f"stopped nonexistent record: {resp.json().get('details', None)}"
+    assert resp.json().get("status") == 500, f"stopped nonexistent record: {resp.json().get('details', None)}"
 
 
 @pytest.mark.video
 def test_start_second_record() -> None:
-    resp = test_client.post("/video/camera/1/start")
+    resp = test_client.post("/video/camera/222/start")
     assert resp.ok, resp.text
     assert resp.status_code == 200, resp.json().get("details", None)
 
@@ -70,7 +70,9 @@ def test_start_second_record() -> None:
 
 @pytest.mark.video
 def test_stop_second_record() -> None:
-    resp = test_client.post("/video/camera/1/stop", json={"record_id": tests_cache["second_rec"]})
+    resp = test_client.post(
+        f"/video/record/{tests_cache['second_rec']}/stop", json={"record_id": tests_cache["second_rec"]}
+    )
     assert resp.ok, resp.text
     assert resp.status_code == 200, resp.json().get("details", None)
 
@@ -81,23 +83,21 @@ def test_stop_second_record() -> None:
 
 @pytest.mark.video
 def test_multiple_records_cycle() -> None:
-    first_rec_resp = test_client.post("/video/camera/1/start")
-    second_rec_resp = test_client.post("/video/camera/1/start")
+    first_rec_resp = test_client.post("/video/camera/222/start")
+    second_rec_resp = test_client.post("/video/camera/222/start")
 
     time.sleep(delay)
 
     records_list_resp = test_client.get("/video/records")
     assert len(records_list_resp.json().get("ongoing_records")) == 2, "recordings hasn't started"
 
-    end_second_rec_resp = test_client.post(
-        "/video/camera/1/stop", json={"record_id": first_rec_resp.json().get("record_id")}
-    )
+    end_second_rec_resp = test_client.post(f"/video/record/{second_rec_resp.json().get('record_id')}/stop")
 
     time.sleep(delay)
 
-    end_first_rec_resp = test_client.post(
-        "/video/camera/1/stop", json={"record_id": second_rec_resp.json().get("record_id")}
-    )
+    end_first_rec_resp = test_client.post(f"/video/record/{first_rec_resp.json().get('record_id')}/stop")
+
+    time.sleep(delay)
 
     assert end_second_rec_resp.ok, end_second_rec_resp.text
     assert end_first_rec_resp.ok, end_first_rec_resp.text
