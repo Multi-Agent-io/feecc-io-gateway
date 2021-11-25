@@ -4,14 +4,16 @@ import pytest
 import os
 import requests
 
-from .. import test_client, pytest_plugins
+from .. import test_client
 
 
 @pytest.fixture
 def test_img() -> str:
     test_picture = "test_img.svg"
     if not os.path.exists(test_picture):
-        robonomics_logo = "https://robonomics.network/assets/static/robonomics-logo.4520fc0.674fd3b96847876764f360539d019573.svg"
+        robonomics_logo = (
+            "https://robonomics.network/assets/static/robonomics-logo.4520fc0.674fd3b96847876764f360539d019573.svg"
+        )
         logo = requests.get(robonomics_logo)
         with open(test_picture, "wb") as f:
             f.write(logo.content)
@@ -28,7 +30,10 @@ def test_print_image(test_img) -> None:
 
 @pytest.mark.printer
 def test_print_image_annotated(test_img) -> None:
-    resp = test_client.post("/printing/print_image", files={"image_file": open(test_img, "rb")},
-                            json={"annotation": "image with annotation"})
+    resp = test_client.post(
+        "/printing/print_image",
+        files={"image_file": open(test_img, "rb")},
+        json={"annotation": "image with annotation"},
+    )
     assert resp.ok
     assert resp.status_code == 200

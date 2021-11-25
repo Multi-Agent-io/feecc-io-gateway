@@ -1,4 +1,4 @@
-from .. import test_client, pytest_plugins
+from .. import test_client
 import os
 
 test_filename = "ipfs_test.txt"
