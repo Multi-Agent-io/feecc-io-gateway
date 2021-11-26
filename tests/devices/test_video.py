@@ -6,7 +6,7 @@ import pytest
 from .. import test_client
 
 # Use TESTS_DELAY environ var to control time.sleep length. 2 seconds by default
-delay = os.environ.get("TESTS_DELAY", 2)
+delay = float(os.environ.get("TESTS_DELAY", 2))
 tests_cache: tp.Dict[str, str] = {}
 
 
@@ -34,7 +34,7 @@ def test_start_first_record() -> None:  # TODO
     tests_cache["first_rec"] = resp.json().get("record_id")
 
     records_list_resp = test_client.get("/video/records")
-    assert len(records_list_resp.json().get("ongoing_records")) != 0, "recording hasn't started"
+    assert len(records_list_resp.json().get("ongoing_records", [])) != 0, "recording hasn't started"
 
 
 @pytest.mark.video
@@ -45,7 +45,7 @@ def test_stop_first_record() -> None:
 
     records_list_resp = test_client.get("/video/records")
     assert (
-        len(records_list_resp.json().get("ongoing_records")) == 0
+        len(records_list_resp.json().get("ongoing_records", [])) == 0
     ), f"recording hasn't stopped: {records_list_resp.json()}"
 
 
@@ -64,8 +64,8 @@ def test_start_second_record() -> None:
     tests_cache["second_rec"] = resp.json().get("record_id")
 
     records_list_resp = test_client.get("/video/records")
-    assert len(records_list_resp.json().get("ongoing_records")) != 0, "second recording hasn't started"
-    assert len(records_list_resp.json().get("ended_records")) == 1, "second recording hasn't started"
+    assert len(records_list_resp.json().get("ongoing_records", [])) != 0, "second recording hasn't started"
+    assert len(records_list_resp.json().get("ended_records", [])) == 1, "second recording hasn't started"
 
 
 @pytest.mark.video
@@ -77,8 +77,8 @@ def test_stop_second_record() -> None:
     assert resp.status_code == 200, resp.json().get("details", None)
 
     records_list_resp = test_client.get("/video/records")
-    assert len(records_list_resp.json().get("ongoing_records")) == 0, "recording hasn't stopped"
-    assert len(records_list_resp.json().get("ended_records")) == 2, "second recording hasn't started"
+    assert len(records_list_resp.json().get("ongoing_records", [])) == 0, "recording hasn't stopped"
+    assert len(records_list_resp.json().get("ended_records", [])) == 2, "second recording hasn't started"
 
 
 @pytest.mark.video
@@ -89,7 +89,7 @@ def test_multiple_records_cycle() -> None:
     time.sleep(delay)
 
     records_list_resp = test_client.get("/video/records")
-    assert len(records_list_resp.json().get("ongoing_records")) == 2, "recordings hasn't started"
+    assert len(records_list_resp.json().get("ongoing_records", [])) == 2, "recordings hasn't started"
 
     end_second_rec_resp = test_client.post(f"/video/record/{second_rec_resp.json().get('record_id')}/stop")
 

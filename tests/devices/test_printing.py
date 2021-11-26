@@ -1,8 +1,4 @@
-import os
-
 import pytest
-import os
-import requests
 
 from .. import test_client
 
