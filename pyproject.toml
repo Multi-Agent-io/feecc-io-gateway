@@ -17,7 +17,6 @@ uvicorn = "^0.15.0"
 python-multipart = "^0.0.5"
 motor = "^2.5.1"
 dnspython = "^2.1.0"
-pytest-docker-compose = "^3.2.1"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.910"
