@@ -24,7 +24,7 @@ async def pin_file(file: tp.Union[os.PathLike[tp.AnyStr], tp.IO[bytes]]) -> tp.T
     t0 = time()
 
     files = {"file": open(file, "rb") if isinstance(file, os.PathLike) else file}
-    async with httpx.AsyncClient(base_url=PINATA_ENDPOINT) as client:
+    async with httpx.AsyncClient(base_url=PINATA_ENDPOINT, timeout=600.0) as client:
         response = await client.post("/pinning/pinFileToIPFS", files=files, headers=AUTH_HEADERS)
 
     data = response.json()
