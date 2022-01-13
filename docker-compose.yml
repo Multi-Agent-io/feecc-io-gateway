@@ -15,6 +15,7 @@ services:
       context: ./
       dockerfile: Dockerfile
     init: true
+    privileged: true
     network_mode: host
     restart: always
     volumes:

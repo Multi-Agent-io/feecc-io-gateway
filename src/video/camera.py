@@ -21,9 +21,8 @@ class Camera:
 
     ip: str
     port: int
-    login: str
-    password: str
     number: int
+    rtsp_stream_link: str
 
     def __post_init__(self) -> None:
         self.is_up()
@@ -34,10 +33,6 @@ class Camera:
     @property
     def host(self) -> str:
         return f"{self.ip}:{self.port}"
-
-    @property
-    def rtsp_stream_link(self) -> str:
-        return f"rtsp://{self.login}:{self.password}@{self.ip}:{self.port}/Streaming/Channels/101"
 
     def is_up(self) -> bool:
         """check if camera is reachable on the specified port and ip"""
@@ -103,7 +98,7 @@ class Recording:
             stdin=asyncio.subprocess.PIPE,
         )
         self.start_time = datetime.now()
-        logger.info(f"Started recording video '{self.filename}' using ffmpeg")
+        logger.info(f"Started recording video '{self.filename}' using ffmpeg. {self.process_ffmpeg.pid=}")
 
     async def stop(self) -> None:
         """stop recording a video"""
@@ -119,7 +114,8 @@ class Recording:
             )
             await asyncio.sleep(MINIMAL_RECORD_DURATION_SEC - len(self))
 
-        self.process_ffmpeg.terminate()
+        logger.info(f"Trying to stop record {self.record_id} process {self.process_ffmpeg.pid=}")
+        await self.process_ffmpeg.communicate(input=b"q")
         await self.process_ffmpeg.wait()
         self.process_ffmpeg = None
         self.end_time = datetime.now()
@@ -130,9 +126,8 @@ cameras: tp.Dict[int, Camera] = {
     section.number: Camera(
         ip=section.ip,
         port=section.port,
-        login=section.login,
-        password=section.password,
         number=section.number,
+        rtsp_stream_link=section.rtsp_stream_link,
     )
     for section in camera_config
 }
