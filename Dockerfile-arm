@@ -1,0 +1,19 @@
+FROM python:3.9 as dependency-compilation
+WORKDIR /tmp
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
+RUN /root/.cargo/bin/rustup default nightly
+RUN . /root/.cargo/env && pip install cryptography
+RUN pip install poetry
+COPY ./pyproject.toml /tmp/
+RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
+
+FROM python:3.9
+RUN apt update && apt install -y usbutils zlib1g libjpeg-dev ffmpeg
+WORKDIR /
+COPY --from=dependency-compilation /tmp/requirements.txt /code/requirements.txt
+COPY --from=dependency-compilation /root/.cache/pip /root/.cache/pip
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+COPY . /
+ENV IS_DOCKERIZED true
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+
