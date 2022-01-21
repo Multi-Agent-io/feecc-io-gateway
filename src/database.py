@@ -8,6 +8,16 @@ from .shared.config import config
 from .shared.Singleton import SingletonMeta
 
 
+def _get_database_name(db_uri: str) -> str:
+    """Get DB name in cluster from a MongoDB connection url"""
+    db_name: str = db_uri.split("/")[-1]
+
+    if "?" in db_name:
+        db_name = db_name.split("?")[0]
+
+    return db_name
+
+
 class MongoDbWrapper(metaclass=SingletonMeta):
     """A database wrapper implementation for MongoDB"""
 
@@ -17,7 +27,8 @@ class MongoDbWrapper(metaclass=SingletonMeta):
         mongo_client_url: str = config.mongo_db.mongo_connection_url + "&ssl=true&ssl_cert_reqs=CERT_NONE"
         mongo_client: AsyncIOMotorClient = AsyncIOMotorClient(mongo_client_url)
 
-        self._database = mongo_client["Feecc-Hub"]
+        db_name: str = _get_database_name(mongo_client_url)
+        self._database = mongo_client[db_name]
         self._employee_collection: AsyncIOMotorCollection = self._database["Employee-data"]
 
         logger.info("Connected to MongoDB")
