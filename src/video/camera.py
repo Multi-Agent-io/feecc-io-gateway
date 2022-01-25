@@ -87,10 +87,13 @@ class Recording:
     def is_ongoing(self) -> bool:
         return self.start_time is not None and self.end_time is None
 
+    @logger.catch(reraise=True)
     async def start(self) -> None:
         """Execute ffmpeg command"""
-        # ffmpeg -rtsp_transport tcp -i "rtsp://login:password@ip:port/Streaming/Channels/101" -c copy -map 0 vid.mp4
-        command: str = f'ffmpeg -rtsp_transport tcp -i "{self.rtsp_steam}" -r 25 -c copy -map 0 {self.filename}'
+        # ffmpeg -loglevel warning -rtsp_transport tcp -i "rtsp://login:password@ip:port/Streaming/Channels/101" -c copy -map 0 vid.mp4
+        command: str = (
+            f'ffmpeg -loglevel warning -rtsp_transport tcp -i "{self.rtsp_steam}" -r 25 -c copy -map 0 {self.filename}'
+        )
         self.process_ffmpeg = await asyncio.subprocess.create_subprocess_shell(
             cmd=command,
             stdout=asyncio.subprocess.PIPE,
@@ -100,6 +103,7 @@ class Recording:
         self.start_time = datetime.now()
         logger.info(f"Started recording video '{self.filename}' using ffmpeg. {self.process_ffmpeg.pid=}")
 
+    @logger.catch(reraise=True)
     async def stop(self) -> None:
         """stop recording a video"""
         if self.process_ffmpeg is None:
@@ -115,10 +119,20 @@ class Recording:
             await asyncio.sleep(MINIMAL_RECORD_DURATION_SEC - len(self))
 
         logger.info(f"Trying to stop record {self.record_id} process {self.process_ffmpeg.pid=}")
-        await self.process_ffmpeg.communicate(input=b"q")
+
+        stdout, stderr = await self.process_ffmpeg.communicate(input=b"q")
         await self.process_ffmpeg.wait()
+        return_code = self.process_ffmpeg.returncode
+
+        if return_code == 0:
+            logger.debug("Got a zero return code from ffmpeg subprocess. Assuming success.")
+        else:
+            logger.error(f"Got a non zero return code from ffmpeg subprocess: {return_code}")
+            logger.debug(f"{stdout=} {stderr=}")
+
         self.process_ffmpeg = None
         self.end_time = datetime.now()
+
         logger.info(f"Finished recording video for record {self.record_id}")
 
 
