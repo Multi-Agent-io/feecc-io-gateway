@@ -40,7 +40,6 @@ class Printer(metaclass=SingletonMeta):
             logger.debug(f"An error occurred while parsing USB address: {e}")
             return None
 
-    @logger.catch(reraise=True)
     def print_image(self, image_data: tp.Union[str, bytes], annotation: tp.Optional[str] = None) -> None:
         """execute the task"""
         if not all((self._enabled, self._address)):
