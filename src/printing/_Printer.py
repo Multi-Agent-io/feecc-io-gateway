@@ -70,14 +70,36 @@ class Printer(metaclass=SingletonMeta):
         image = image.resize((target_w, target_h))
         return image
 
-    @logger.catch(reraise=True)
     def _print_image(self, image: Image) -> None:
         """print provided image"""
         logger.info(f"Printing image of size {image.size}")
         qlr: BrotherQLRaster = BrotherQLRaster(self._model)
         red: bool = config.printer.red
         conversion.convert(qlr, [image], self._paper_width, red=red)
-        send(qlr.data, self._address)
+        backends = (
+            ("pyusb", self._address),
+            ("linux_kernel", "/dev/usb/lp0"),
+        )
+        success = False
+
+        for backend, address in backends:
+            try:
+                status = send(
+                    instructions=qlr.data,
+                    backend_identifier=backend,
+                    printer_identifier=address,
+                    blocking=False,
+                )
+                logger.debug(f"Printing succeeded using {backend=}, {address=}.")
+                logger.debug(f"Job status: {status}")
+                success = True
+                break
+
+            except Exception as e:
+                logger.error(f"Execution of 'brother_ql.backends.helpers.send()' failed. {backend=}, {address=}. {e}")
+
+        if not success:
+            raise BrokenPipeError("Printing failed. No backend was able to to handle the task.")
 
     @staticmethod
     def _annotate_image(image: Image, text: str) -> Image:
