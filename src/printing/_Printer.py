@@ -88,7 +88,6 @@ class Printer(metaclass=SingletonMeta):
                     instructions=qlr.data,
                     backend_identifier=backend,
                     printer_identifier=address,
-                    blocking=False,
                 )
                 logger.debug(f"Printing succeeded using {backend=}, {address=}.")
                 logger.debug(f"Job status: {status}")
