@@ -95,7 +95,7 @@ class Printer(metaclass=SingletonMeta):
                 break
 
             except Exception as e:
-                logger.error(f"Execution of 'brother_ql.backends.helpers.send()' failed. {backend=}, {address=}. {e}")
+                logger.warning(f"Execution of 'brother_ql.backends.helpers.send()' failed. {backend=}, {address=}. {e}")
 
         if not success:
             raise BrokenPipeError("Printing failed. No backend was able to to handle the task.")
