@@ -1,4 +1,5 @@
 import io
+import os
 import re
 import textwrap
 import typing as tp
@@ -76,10 +77,13 @@ class Printer(metaclass=SingletonMeta):
         qlr: BrotherQLRaster = BrotherQLRaster(self._model)
         red: bool = config.printer.red
         conversion.convert(qlr, [image], self._paper_width, red=red)
-        backends = (
-            ("pyusb", self._address),
-            ("linux_kernel", "/dev/usb/lp0"),
-        )
+
+        # need to provide multiple fallbacks as the QL library us pretty unstable
+        # while printer keeps getting different addresses so we need to try them all
+        directory = "/dev/usb"
+        usb_devices = (f"{directory}/{desc}" for desc in os.listdir(directory) if desc.startswith("lp"))
+        backends = [("linux_kernel", dev) for dev in usb_devices]
+        backends.insert(0, ("pyusb", str(self._address)))
         success = False
 
         for backend, address in backends:
