@@ -17,5 +17,5 @@ def _load_config(config_path: str, model) -> tp.Any:
         return pydantic.parse_obj_as(model, config_f)
 
 
-config: GlobalConfig = _load_config("src/config.yaml", GlobalConfig)
-camera_config: tp.List[CameraConfigSection] = _load_config("src/camera_config.yaml", tp.List[CameraConfigSection])
+config: GlobalConfig = _load_config("src/config/config.yaml", GlobalConfig)
+camera_config: tp.List[CameraConfigSection] = _load_config("src/config/camera_config.yaml", tp.List[CameraConfigSection])

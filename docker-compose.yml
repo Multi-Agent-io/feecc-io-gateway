@@ -23,3 +23,4 @@ services:
       - "/dev/usb:/dev/usb"
       - "/etc/timezone:/etc/timezone:ro"
       - "/etc/localtime:/etc/localtime:ro"
+      - "./src/config:/src/config:ro"
